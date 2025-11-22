@@ -8,13 +8,13 @@ use App\Http\Requests\RegisterRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Redis;
 
 class AuthController extends Controller
 {
    public function register(RegisterRequest $request)
    {
     $validatedData=$request->validated();
+    $code = rand(1, 10000);
     $user=User::create([
         'name'=> $validatedData['name'] ,
         'email'=> $validatedData['email'] ,
