@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use Dom\Text;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -34,6 +36,16 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+    public function ownedTeams()
+    {
+        return $this->hasMany(Team::class, 'owner_id');
+    }
+
+    public function teams()
+    {
+        return $this->belongsToMany(Team::class , 'team_user')
+        ->using(TeamUser::class)->withPivot('role')->withTimestamps();
+    }
 
     /**
      * Get the attributes that should be cast.
