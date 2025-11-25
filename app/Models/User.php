@@ -47,6 +47,11 @@ class User extends Authenticatable
         ->using(TeamUser::class)->withPivot('role')->withTimestamps();
     }
 
+    public function projects()
+    {
+        return $this->hasMany(Project::class);
+    }
+
     /**
      * Get the attributes that should be cast.
      *

@@ -21,4 +21,8 @@ class Team extends Model
         return $this->belongsToMany(User::class , 'team_user')
         ->using(TeamUser::class)->withPivot('role')->withTimestamps();
     }
+
+    public function projects()  {
+        return $this->hasMany(Project::class);
+    }
 }
