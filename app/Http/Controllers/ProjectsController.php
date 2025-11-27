@@ -6,23 +6,21 @@ use App\Models\Team;
 use Illuminate\Http\Request;
 
 use App\Helpers\ApiResponse;
+use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ProjectsController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Display a listing of the resource.
      */
     public function index($teamId)
-    { $user = Auth::user();
-      $team = Team::with('projects')->findOrFail($teamId);
-      $is_owner = $team->owner_id === $user->id;
-      $isMember = $team->members()->where('user_id', $user->id)->exists();
-
-
-          if (!$is_owner && !$isMember) {
-        return ApiResponse::sendResponse(403, 'You are not allowed to view this team projects', null);
-        }
+    {
+        $team = Team::with('projects')->findOrFail($teamId);
+        $this->authorize('access', $team);
+        
         return ApiResponse::sendResponse(200, 'Team projects retrieved successfully', $team->projects);
     }        
 
@@ -43,21 +41,13 @@ class ProjectsController extends Controller
         'description' => 'nullable|string',
         'status' => 'required|string|in:pending,active,completed',
                                 ]);
-        $user = Auth::user();
         $team = Team::findOrFail($teamId);
-        $is_owner = $team->owner_id === $user->id;
-        $isMember = $team->members()->where('user_id', $user->id)->exists();
-
-
-          if (!$is_owner && !$isMember) {
-        return ApiResponse::sendResponse(403, 'You are not allowed to view this team projects', null);
-        }
+        $this->authorize('access', $team);
         $project = $team->projects()->create([
             'name' => $data['name'],
             'description' => $data['description'],
             'status' => $data['status'],
-            'team_id' => $teamId,
-            'created_by' => $user->id
+            'created_by' => Auth::id()
         ]);
 
         return ApiResponse::sendResponse(201, 'Project created successfully', $project);
@@ -68,15 +58,8 @@ class ProjectsController extends Controller
      */
     public function show(string $id, $teamId)
     {
-        $user = Auth::user();
         $team = Team::findOrFail($teamId);
-        $is_owner = $team->owner_id === $user->id;
-        $isMember = $team->members()->where('user_id', $user->id)->exists();
-
-
-          if (!$is_owner && !$isMember) {
-        return ApiResponse::sendResponse(403, 'You are not allowed to view this team projects', null);
-        }
+        $this->authorize('access', $team);
         $project = $team->projects()->findOrFail($id);
         return ApiResponse::sendResponse(200, 'Project retrieved successfully', $project);
     }
@@ -98,15 +81,8 @@ class ProjectsController extends Controller
             'description' => 'nullable|string',
             'status' => 'required|string|in:pending,active,completed',
                                 ]);
-        $user = Auth::user();
         $team = Team::findOrFail($teamId);
-        $is_owner = $team->owner_id === $user->id;
-        $isMember = $team->members()->where('user_id', $user->id)->exists();
-
-
-          if (!$is_owner && !$isMember) {
-        return ApiResponse::sendResponse(403, 'You are not allowed to view this team projects', null);
-        }
+        $this->authorize('access', $team);
         $project=$team->projects()->findOrFail($id);
         $project->update($data);
         return ApiResponse::sendResponse(200, 'Project updated successfully', $project);
@@ -115,8 +91,13 @@ class ProjectsController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(string $id, $teamId)
     {
-        //
+      $user = Auth::user();
+        $team = Team::findOrFail($teamId);
+        $this->authorize('access', $team);
+        $project=$team->projects()->findOrFail($id);
+        $project->delete();
+        return ApiResponse::sendResponse(200, 'Project deleted successfully', null);
     }
 }

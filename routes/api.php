@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TeamController;
+use App\Http\Controllers\ProjectsController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -18,9 +19,17 @@ Route::controller(AuthController::class)->group(function (){
 
 Route::middleware('auth:sanctum')->prefix('teams')->group(function () {
 
-Route::apiResource('/', TeamController::class);
-Route::post('{id}/add-member', [TeamController::class, 'addMember']);
-Route::put('{id}/members/{memberId}', [TeamController::class, 'updateMemberRole']);
-Route::delete('{id}/members/{memberId}', [TeamController::class, 'removeMember']);
+    // CRUD teams
+    Route::apiResource('', TeamController::class);
 
+    // team members
+    Route::post('{team}/add-member', [TeamController::class, 'addMember']);
+    Route::put('{team}/members/{member}', [TeamController::class, 'updateMemberRole']);
+    Route::delete('{team}/members/{member}', [TeamController::class, 'removeMember']);
+});
+
+
+Route::middleware('auth:sanctum')->prefix('teams/{team}')->group(function () {
+
+    Route::apiResource('projects', ProjectsController::class);
 });
